@@ -1,13 +1,16 @@
-
+#importing libraries
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+#reading datasets
 x_train=pd.read_csv('train.csv',parse_dates=['Date']).iloc[:,:14]
 y_train=pd.read_csv('train.csv').iloc[:,14:15]
 x_train=x_train.set_index('TID')
 x_test=pd.read_csv('test.csv',parse_dates=['Date'])
 x_test=x_test.set_index('TID')
+
+#splitting date
 x_test['year']=x_test['Date'].apply(lambda x:x.year)
 x_test['month']=x_test['Date'].apply(lambda x:x.month)
 x_test['day']=x_test['Date'].apply(lambda x:x.day)
@@ -16,7 +19,7 @@ x_train['month']=x_train['Date'].apply(lambda x:x.month)
 x_train['day']=x_train['Date'].apply(lambda x:x.day)
 
 
-
+#dropping unwanted features
 x_train=x_train.drop(columns=['Date','AddressLine1','AddressLine2','Street','Locality','Town','Taluka','District','Price Category'])
 x_test=x_test.drop(columns=['Date','AddressLine1','AddressLine2','Street','Locality','Town','Taluka','District','Price Category'])
   
@@ -31,6 +34,7 @@ x_train = pd.DataFrame(x_train)
 x_test=imp1.fit_transform(x_test)
 x_test = pd.DataFrame(x_test)
 
+#label encoding
 from sklearn.preprocessing import LabelEncoder
 le=LabelEncoder()
 le1=LabelEncoder()
@@ -41,7 +45,7 @@ categorical_feature_mask1= x_test.dtypes==object
 categorical_cols = x_train.columns[categorical_feature_mask].tolist()
 categorical_cols1 = x_test.columns[categorical_feature_mask1].tolist()
 
-# apply le on categorical feature columns
+# apply le and le1 on categorical feature columns
 x_train[categorical_cols] = x_train[categorical_cols].apply(lambda col: le.fit_transform(col))
 x_test[categorical_cols1] = x_test[categorical_cols1].apply(lambda col: le1.fit_transform(col))
 
@@ -53,21 +57,19 @@ x_train = ohe.fit_transform(x_train).toarray()
 x_test = ohe1.fit_transform(x_test).toarray()
  # It returns an numpy array
  
- 
+#preventing dummy variable trap 
 x_test = pd.DataFrame(x_test)
 x_train = pd.DataFrame(x_train)
 x_train=x_train.drop(columns=[0,5,7])
 x_test=x_test.drop(columns=[0,5,7])
 
-
+#reducing dimensionality
 from sklearn.decomposition import PCA 
-  
 pca = PCA(n_components = 2) 
-  
 x_train = pca.fit_transform(x_train) 
 x_test = pca.transform(x_test) 
   
-explained_variance = pca.explained_variance_ratio_ 
+#fitting to the train data and predicting prices
 from sklearn.linear_model import LinearRegression
 
 reg=LinearRegression()
